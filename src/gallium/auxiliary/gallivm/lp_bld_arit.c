@@ -3171,6 +3171,12 @@ lp_build_pow(struct lp_build_context *bld,
              LLVMValueRef x,
              LLVMValueRef y)
 {
+   struct lp_build_if_state if_ctx;
+   LLVMBasicBlockRef blocks[2];
+   LLVMValueRef values[2];
+   LLVMValueRef cond;
+   LLVMValueRef ret;
+
    /* TODO: optimize the constant case */
    if (gallivm_debug & GALLIVM_DEBUG_PERF &&
        LLVMIsConstant(x) && LLVMIsConstant(y)) {
@@ -3178,7 +3184,20 @@ lp_build_pow(struct lp_build_context *bld,
                    __FUNCTION__);
    }
 
-   return lp_build_exp2(bld, lp_build_mul(bld, lp_build_log2(bld, x), y));
+   cond = LLVMBuildFCmp(bld->gallivm->builder, LLVMRealUEQ, x, bld->zero, "");
+   cond = LLVMBuildExtractElement(bld->gallivm->builder, cond,
+            lp_build_const_int32(bld->gallivm, 0), "pow_cond");
+   lp_build_if(&if_ctx, bld->gallivm, cond);
+      values[0] = bld->zero;
+   lp_build_else(&if_ctx);
+      values[1] = lp_build_exp2(bld, lp_build_mul(bld, lp_build_log2(bld, x), y));
+   lp_build_endif(&if_ctx);
+   blocks[0] = if_ctx.true_block;
+   blocks[1] = if_ctx.false_block;
+   ret = LLVMBuildPhi(bld->gallivm->builder, bld->vec_type, "pow_ret");
+   LLVMAddIncoming(ret, values, blocks, 2);
+
+   return ret;
 }
 
 
