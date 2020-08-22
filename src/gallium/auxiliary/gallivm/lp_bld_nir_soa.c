@@ -918,8 +918,12 @@ static void emit_load_ubo(struct lp_build_nir_context *bld_base,
       for (unsigned c = 0; c < nc; c++) {
          LLVMValueRef this_offset = LLVMBuildAdd(builder, offset, lp_build_const_int32(gallivm, c), "");
 
+         /* TODO: better place for this?  +inf only?  doesn't work when multiplied */
          LLVMValueRef scalar = lp_build_pointer_get(builder, consts_ptr, this_offset);
-         result[c] = lp_build_broadcast_scalar(bld_broad, scalar);
+         LLVMValueRef broad = lp_build_broadcast_scalar(bld_broad, scalar);
+         LLVMValueRef isinf = lp_build_is_inf_or_nan(gallivm, bld_broad->type, broad);
+         LLVMValueRef one = lp_build_one(gallivm, bld_broad->type);
+         result[c] = lp_build_select(bld_broad, isinf, one, broad);
       }
    } else {
       LLVMValueRef overflow_mask;
