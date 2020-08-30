@@ -1215,6 +1215,15 @@ try_update_scene_state( struct lp_setup_context *setup )
 
          num_constants =
             DIV_ROUND_UP(setup->constants[i].stored_size, (sizeof(float) * 4));
+{
+int j;
+for (j = 0; j < num_constants * 4; j++)
+{
+    /* changing here only does it once instead of each frag call */
+    float *f = &((float *)setup->constants[i].stored_data)[j];
+    if (isinf(*f)) *f = 255.0f;
+}
+}
          setup->fs.current.jit_context.num_constants[i] = num_constants;
          setup->dirty |= LP_SETUP_NEW_FS;
       }
