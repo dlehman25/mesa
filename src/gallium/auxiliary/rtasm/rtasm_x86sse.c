@@ -38,7 +38,7 @@
 #define X86_TWOB 0x0f
 
 
-#define DUMP_SSE  0
+#define DUMP_SSE  1
 
 
 void x86_print_reg( struct x86_reg reg )
@@ -89,7 +89,7 @@ void x86_print_reg( struct x86_reg reg )
       foo++;                                    \
    if  (*foo)                                   \
       foo++;                                    \
-   debug_printf( "\n%4x %14s ", p->csr - p->store, foo );             \
+   debug_printf( "\n%4lx %14s ", p->csr - p->store, foo );             \
 } while (0)
 
 #define DUMP_I( I ) do {                        \

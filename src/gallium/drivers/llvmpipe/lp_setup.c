@@ -1217,6 +1217,8 @@ try_update_scene_state( struct lp_setup_context *setup )
             DIV_ROUND_UP(setup->constants[i].stored_size, (sizeof(float) * 4));
 {
 int j;
+static int done;
+if (0 && !done++) {printf("%s: %d: waiting %d\n", __FUNCTION__, __LINE__, getpid());getchar();}
 for (j = 0; j < num_constants * 4; j++)
 {
     /* changing here only does it once instead of each frag call */
